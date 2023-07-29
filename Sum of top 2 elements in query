@@ -1,0 +1,84 @@
+#include<bits/stdc++.h>
+using namespace std;
+#define vll vector<long long>
+#define ll long long
+
+int seg[400001][2];
+void build(int arr[],int in,int lb,int ub){
+    if(lb==ub){
+        seg[in][0]=arr[lb];
+        seg[in][1]=INT_MIN;
+        // cout<<lb<<" "<<ub<<" "<< seg[in][0]<<" "<<seg[in][1]<<endl;
+        return;
+    }
+    int mid=(lb+ub)/2;
+    build(arr,2*in,lb,mid);
+    build(arr,2*in+1,mid+1,ub);
+    seg[in][0]=max(seg[2*in][0],seg[2*in+1][0]);
+    int a=seg[2*in][0]+seg[2*in+1][0]-seg[in][0],b=seg[2*in][1],c=seg[2*in+1][1];
+    seg[in][1]=max(a,max(b,c));
+    // cout<<lb<<" "<<ub<<" "<< seg[in][0]<<" "<<seg[in][1]<<endl;
+}
+void update(int in,int lb,int ub,int i,int x){
+    if(lb==ub){
+        if(lb==i)
+            seg[in][0]=x;
+        // cout<<lb<<" "<<ub<<" "<< seg[in][0]<<" "<<seg[in][1]<<endl;
+        return;
+    }
+    int mid=(lb+ub)/2;
+    if(i<=mid){
+        update(2*in,lb,mid,i,x);
+    }
+    else    
+        update(2*in+1,mid+1,ub,i,x);
+    seg[in][0]=max(seg[2*in][0],seg[2*in+1][0]);
+    int a=seg[2*in][0]+seg[2*in+1][0]-seg[in][0],b=seg[2*in][1],c=seg[2*in+1][1];
+    seg[in][1]=max(a,max(b,c));
+    // cout<<lb<<" "<<ub<<" "<< seg[in][0]<<" "<<seg[in][1]<<endl;
+}
+pair<int,int> Solve(int in, int lb,int ub,int l,int r){
+    if(lb==l && ub==r)
+        return {seg[in][0],seg[in][1]};
+    if(l>ub && r<lb)
+        return {INT_MIN,INT_MIN};
+    if(l<lb)
+        return Solve(in,lb,ub,lb,r);
+    if(r>ub)
+        return Solve(in,lb,ub,l,ub);
+    int mid=(lb+ub)/2;
+    if(l>mid)
+        return Solve(2*in+1,mid+1,ub,l,r);
+    if(r<=mid)
+        return Solve(2*in,lb,mid,l,r);
+    pair<int,int> x,a=Solve(2*in,lb,mid,l,mid),b=Solve(2*in+1,mid+1,ub,mid+1,r);
+    x.first=max(a.first,b.first);
+    x.second=max(a.first+b.first-x.first,max(a.second,b.second));
+    return x;
+}
+int main(){
+    // memset(seg,INT_MIN,sizeof(seg));
+    int n,q;
+    cin>>n>>q;
+    int arr[n];
+    for(int i=0;i<n;i++){
+        cin>>arr[i];
+    }
+    vector<vector<int>> query;
+    int a,b,c;
+    for(int i=0;i<q;i++){ 
+        cin>>a>>b>>c;
+        query.push_back({a,b,c});
+    }
+    build(arr,1,0,n-1);
+    cout<<"gkjgskdv"<<endl;
+    for(auto i:query){
+        if(i[0]==0){
+            update(1,0,n-1,i[1],i[2]);
+        }
+        if(i[0]==1){
+            pair<int,int> x=Solve(1,0,n-1,i[1],i[2]);
+            cout<<"Sum between "<<i[1]<<" and "<<i[2]<<" is= "<<(x.first+x.second)<<endl;
+        }
+    }
+}
